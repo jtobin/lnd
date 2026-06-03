@@ -938,6 +938,24 @@ func (r *ChannelReservation) CommitmentKeyRings() lntypes.Dual[CommitmentKeyRing
 	}
 }
 
+// AuxChanState returns an AuxChanState for this reservation. Unlike
+// NewAuxChanState(r.ChanState()), this populates the LocalChanCfg and
+// RemoteChanCfg fields from the negotiated contributions, which is necessary
+// at funding time: partialState's ChanCfg fields aren't copied from
+// ourContribution/theirContribution until CompleteChannel, so an aux
+// component reading them at the DescFromPendingChanID dispatch site would
+// otherwise see zero-valued CsvDelay / DustLimit / etc.
+func (r *ChannelReservation) AuxChanState() AuxChanState {
+	r.RLock()
+	defer r.RUnlock()
+
+	auxState := NewAuxChanState(r.partialState)
+	auxState.LocalChanCfg = r.ourContribution.toChanConfig()
+	auxState.RemoteChanCfg = r.theirContribution.toChanConfig()
+
+	return auxState
+}
+
 // VerifyConstraints is a helper function that can be used to check the sanity
 // of various channel constraints.
 func VerifyConstraints(bounds *channeldb.ChannelStateBounds,

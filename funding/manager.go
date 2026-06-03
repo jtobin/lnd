@@ -2368,9 +2368,7 @@ func (f *Manager) waitForPsbt(intent *chanfunding.PsbtIntent,
 			func(c AuxFundingController) AuxFundingDescResult {
 				return c.DescFromPendingChanID(
 					cid.tempChanID,
-					lnwallet.NewAuxChanState(
-						resCtx.reservation.ChanState(),
-					),
+					resCtx.reservation.AuxChanState(),
 					resCtx.reservation.CommitmentKeyRings(),
 					true,
 				)
@@ -2556,9 +2554,9 @@ func (f *Manager) fundeeProcessFundingCreated(peer lnpeer.Peer,
 		f.cfg.AuxFundingController,
 		func(c AuxFundingController) AuxFundingDescResult {
 			return c.DescFromPendingChanID(
-				cid.tempChanID, lnwallet.NewAuxChanState(
-					resCtx.reservation.ChanState(),
-				), resCtx.reservation.CommitmentKeyRings(),
+				cid.tempChanID,
+				resCtx.reservation.AuxChanState(),
+				resCtx.reservation.CommitmentKeyRings(),
 				true,
 			)
 		},
